@@ -32,52 +32,47 @@ Verilog Code for Sequence Detector Using Moore FSM
 
 // moore_sequence_detector.v
 ```
-    module fsm_sequence(
-    input clk,
-    input reset,
-    input run,
-    output reg [3:0] count
-);
-    // State encoding
-    localparam s0 = 4'd0;
-    localparam s2 = 4'd2;
-    localparam s4 = 4'd4;
-    localparam s6 = 4'd6;
-    localparam s8 = 4'd8;
-    localparam s10 = 4'd10;
-    localparam s12 = 4'd12;
-    reg [3:0] current_state, next_state;
-    // State transition logic
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            current_state <= s0;  // Initialize to state s0 on reset
-        end else begin
-            current_state <= next_state;  // Move to next state on clock edge
-        end
-    end
-    // Next state logic
-    always @(*) begin
-        case (current_state)
-            s0:  if (run) next_state = s2;  else next_state = s0;
-            s2:  if (run) next_state = s4;  else next_state = s2;
-            s4:  if (run) next_state = s6;  else next_state = s4;
-            s6:  if (run) next_state = s8;  else next_state = s6;
-            s8:  if (run) next_state = s10; else next_state = s8;
-            s10: if (run) next_state = s12; else next_state = s10;
-            s12: if (run) next_state = s0;  else next_state = s12;
-            default: next_state = s0;
-        endcase
-    end
-    // Output logic
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            count <= 4'd0;  // Reset count when reset is high
-        end else begin
-            count <= current_state;  // Output the current state as the count
-        end
-    end
+   state_t current_state, next_state;
 
-endmodule
+// State transition logic
+always @(posedge clk or posedge reset) begin
+    if (reset)
+        current_state <= S0;
+    else
+        current_state <= next_state;
+end
+
+// Next state and output logic
+always @(*) begin
+    case (current_state)
+        S0: begin
+            if (seq_in) next_state = S1;
+            else next_state = S0;
+            detected = 0;
+        end
+        S1: begin
+            if (seq_in) next_state = S1;
+            else next_state = S2;
+            detected = 0;
+        end
+        S2: begin
+            if (seq_in) next_state = S3;
+            else next_state = S0;
+            detected = 0;
+        end
+        S3: begin
+            if (seq_in) next_state = S4;
+            else next_state = S2;
+            detected = 0;
+        end
+        S4: begin
+            if (seq_in) next_state = S1;
+            else next_state = S0;
+            detected = 1;  // Sequence 1011 detected
+        end
+        default: next_state = S0;
+    endcase
+end
 ```
 ![Screenshot (12)](https://github.com/user-attachments/assets/1916828b-6e12-40ab-858e-e01ba0364ce4)
 
